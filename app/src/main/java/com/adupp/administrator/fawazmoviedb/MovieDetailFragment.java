@@ -160,8 +160,7 @@ public class MovieDetailFragment extends Fragment  {
             movieDetails.put(MovieContract.MovieEntry.COLUMN_FAVORITE, "N");
 
 
-            CheckBox checkBox = (CheckBox) rootView.findViewById(R.id.favCheckBox);
-
+            final CheckBox checkBox = (CheckBox) rootView.findViewById(R.id.favCheckBox);
             Uri inserted = MovieContract.MovieEntry.buildMovieUri(mID);
             Cursor cursor = getActivity().getContentResolver().query(inserted, MOVIE_COLUMNS, null, null, null);
             if (cursor.getCount() > 0) {
@@ -180,14 +179,39 @@ public class MovieDetailFragment extends Fragment  {
                     mImageView.setImageDrawable(Drawable.createFromPath(filepath.toString()));
                 } else {
                     checkBox.setChecked(false);
+                    checkBox.setVisibility(View.INVISIBLE);
 //                ((TextView) rootView.findViewById(R.id.title)).setText(mTitle);
 //                ((TextView) rootView.findViewById(R.id.OverViewText)).setText(mOverView);
 //                ((TextView) rootView.findViewById(R.id.dateTextView)).setText(mReleaseDate);
 //                ((RatingBar) rootView.findViewById(R.id.movieRatingBar)).setRating(Float.parseFloat(mRating));
 //                ((TextView) rootView.findViewById(R.id.ratingTextView)).setText(mRating + " /10");
-                    Picasso.with(getActivity()).load(mPosterPath).placeholder(R.mipmap.ic_launcher).error(R.drawable.connection_error).into(mImageView);
+                    Picasso.with(getActivity()).load(mPosterPath).placeholder(R.mipmap.ic_launcher).error(R.drawable.connection_error).into(mImageView, new com.squareup.picasso.Callback() {
+                        @Override
+                        public void onSuccess() {
+                             checkBox.setVisibility(View.VISIBLE);
+                        }
+
+                        @Override
+                        public void onError() {
+                            checkBox.setVisibility(View.VISIBLE);
+                        }
+                    });
                 }
             } else {
+
+                checkBox.setVisibility(View.INVISIBLE);
+                Picasso.with(getActivity()).load(mPosterPath).placeholder(R.mipmap.ic_launcher).error(R.drawable.connection_error).into(mImageView, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        checkBox.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onError() {
+                        checkBox.setVisibility(View.VISIBLE);
+                    }
+                });
+
                 movieDetails.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, mID);
                 movieDetails.put(MovieContract.MovieEntry.COLUMN_MOVIE_NAME, mTitle);
                 movieDetails.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, mOverView);
@@ -292,23 +316,25 @@ public class MovieDetailFragment extends Fragment  {
                     ContentValues updateFav = new ContentValues();
                     Uri updateUri = MovieContract.MovieEntry.buildMovieUri(mID);
                     if (isChecked) {
-                        updateFav.put(MovieContract.MovieEntry.COLUMN_FAVORITE, "Y");
-                        getActivity().getContentResolver().update(updateUri, updateFav, null, null);
-                        BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
-                        Bitmap bitmap = drawable.getBitmap();
-                        File sFileDir = Environment.getExternalStorageDirectory();
-                        FileOutputStream outputStream;
-                        try {
-                            //outputStream = new FileOutputStream(image);
-                            String idStr = mPosterPath.substring(mPosterPath.lastIndexOf('/') + 1);
-                            outputStream = getActivity().openFileOutput(idStr, Context.MODE_PRIVATE);
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                            outputStream.flush();
-                            outputStream.close();
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                         BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
+                        if (drawable!=null){
+                            updateFav.put(MovieContract.MovieEntry.COLUMN_FAVORITE, "Y");
+                            getActivity().getContentResolver().update(updateUri, updateFav, null, null);
+                            Bitmap bitmap = drawable.getBitmap();
+                            File sFileDir = Environment.getExternalStorageDirectory();
+                            FileOutputStream outputStream;
+                            try {
+                                //outputStream = new FileOutputStream(image);
+                                String idStr = mPosterPath.substring(mPosterPath.lastIndexOf('/') + 1);
+                                outputStream = getActivity().openFileOutput(idStr, Context.MODE_PRIVATE);
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                                outputStream.flush();
+                                outputStream.close();
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     } else {
                         updateFav.put(MovieContract.MovieEntry.COLUMN_FAVORITE, "N");
