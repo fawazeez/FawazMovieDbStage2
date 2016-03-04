@@ -226,6 +226,10 @@ public class MovieDetailFragment extends Fragment  {
                     .build();
             IApiTrailer serviceTrailer = retrofit.create(IApiTrailer.class);
             callTrailer = serviceTrailer.getTrailer(mID, API_KEY);
+            if(shareActionProvider!=null)
+            {
+                shareActionProvider.setShareIntent(null);
+            }
             callTrailer.enqueue(new Callback<Trailer>() {
                 @Override
                 public void onResponse(Call<Trailer> call, Response<Trailer> response) {
@@ -279,7 +283,10 @@ public class MovieDetailFragment extends Fragment  {
 
                 @Override
                 public void onFailure(Call<Trailer> call, Throwable t) {
-
+                    if(shareActionProvider!=null)
+                    {
+                        shareActionProvider.setShareIntent(null);
+                    }
                 }
             });
 
