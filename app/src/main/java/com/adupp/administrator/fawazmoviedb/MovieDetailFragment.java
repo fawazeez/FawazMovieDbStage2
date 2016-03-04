@@ -121,6 +121,10 @@ public class MovieDetailFragment extends Fragment  {
     public void onDetach() {
         super.onDetach();
         callbackfav=null;
+        if(shareActionProvider!=null)
+        {
+            shareActionProvider.setShareIntent(null);
+        }
     }
 
     @Override
@@ -226,10 +230,6 @@ public class MovieDetailFragment extends Fragment  {
                     .build();
             IApiTrailer serviceTrailer = retrofit.create(IApiTrailer.class);
             callTrailer = serviceTrailer.getTrailer(mID, API_KEY);
-            if(shareActionProvider!=null)
-            {
-                shareActionProvider.setShareIntent(null);
-            }
             callTrailer.enqueue(new Callback<Trailer>() {
                 @Override
                 public void onResponse(Call<Trailer> call, Response<Trailer> response) {
